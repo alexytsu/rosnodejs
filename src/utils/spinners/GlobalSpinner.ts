@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import ClientQueue from './ClientQueue';
 import type Spinner from '../../types/Spinner';
-import type { SpinnerOptions } from '../../types/RosNode';
+import type { SpinnerOptions } from '../../types/IRosNode';
 
 /**
  * @class GlobalSpinner
@@ -189,7 +189,7 @@ enum LockedOp {
   ADD
 }
 
-interface GlobalSpinnerOptions extends SpinnerOptions {
+export interface GlobalSpinnerOptions extends SpinnerOptions {
   spinRate?: number,
   emit?: boolean
 };

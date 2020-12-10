@@ -20,6 +20,7 @@ import Ultron = require('ultron');
 import { rebroadcast } from '../utils/event_utils'
 import type SubscriberImpl from './impl/SubscriberImpl';
 import { Message } from '../types/Message';
+import { ISubscriber } from '../types/ISubscriber';
 
 //-----------------------------------------------------------------------
 
@@ -28,7 +29,7 @@ import { Message } from '../types/Message';
  * Public facing subscriber class. Allows users to listen to messages from
  * publishers on a given topic.
  */
-export default class Subscriber<M extends Message> extends EventEmitter {
+export default class Subscriber<M extends Message> extends EventEmitter implements ISubscriber<M> {
   private _impl: SubscriberImpl<M>;
   private _topic: string;
   private _type: string;

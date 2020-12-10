@@ -126,7 +126,7 @@ function writeRequires(w: IndentedWriter, spec: MsgSpec, isSrv: boolean, previou
         // don't find this package again
         if (!previousPackages.has(fieldPack) && !foundPackages.has(fieldPack)) {
           foundPackages.add(fieldPack);
-          w.write('const %s = _finder(\'%s\');', fieldPack, fieldPack);
+          w.write('const %s = require(\'../../%s/_index.js\');', fieldPack, fieldPack);
         }
       }
     }

@@ -17,19 +17,22 @@
 
 'use strict';
 
-import { INodeHandle, AdvertiseOptions, SubscribeOptions, ClientOptions } from "../types/NodeHandle";
+import { INodeHandle, AdvertiseOptions, SubscribeOptions, ClientOptions } from "../types/INodeHandle";
 
-import RosNode from './RosNode';
+import type RosNode from './RosNode';
 import * as messageUtils from '../utils/message_utils';
 import names from './Names';
 import ActionClientInterface, { ActionClientInterfaceOptions } from './ActionClientInterface';
 import ActionServerInterface, { ActionServerInterfaceOptions } from './ActionServerInterface';
-import { IPublisher, PublisherOptions } from "../types/Publisher";
+import { IPublisher, PublisherOptions } from "../types/IPublisher";
 import { MessageConstructor, ServiceConstructor, ActionConstructor } from "../types/Message";
-import { IServiceClient, ServiceClientOptions } from "../types/ServiceClient";
-import { SubscriberOptions, ISubscriber } from "../types/Subscriber";
-import { ServerCallback, IServiceServer, ServerOptions } from "../types/ServiceServer";
-import IRosNode from "../types/RosNode";
+import { IServiceClient, ServiceClientOptions } from "../types/IServiceClient";
+import { SubscriberOptions, ISubscriber } from "../types/ISubscriber";
+import { ServerCallback, IServiceServer, ServerOptions } from "../types/IServiceServer";
+import type Publisher from "./Publisher";
+import type Subscriber from "./Subscriber";
+import type ServiceServer from "./ServiceServer";
+import type ServiceClient from "./ServiceClient";
 
 /**
  * Handle class for nodes created with rosnodejs
@@ -37,10 +40,10 @@ import IRosNode from "../types/RosNode";
  * @param namespace {string} namespace of node. @default null
  */
 export default class NodeHandle implements INodeHandle {
-  private _node: IRosNode
+  private _node: RosNode
   private _namespace: string;
 
-  constructor(node: IRosNode, namespace:string|null=null) {
+  constructor(node: RosNode, namespace:string|null=null) {
     this._node = node;
     this._namespace = '';
 
@@ -85,7 +88,7 @@ export default class NodeHandle implements INodeHandle {
     topic: string,
     type: string,
     options: AdvertiseOptions = {}
-  ): IPublisher<M> {
+  ): Publisher<M> {
     if (!topic) {
       throw new Error(`Unable to advertise unnamed topic - got ${topic}`);
     }
@@ -123,7 +126,7 @@ export default class NodeHandle implements INodeHandle {
     type: string|MessageConstructor<M>,
     callback?: (msg: M, len?: number, nodeUri?: string)=>void,
     options: SubscribeOptions = {}
-  ): ISubscriber<M> {
+  ): Subscriber<M> {
     if (!topic) {
       throw new Error(`Unable to subscribe to unnamed topic - got ${topic}`);
     }
@@ -177,7 +180,7 @@ export default class NodeHandle implements INodeHandle {
     service: string,
     type: string|ServiceConstructor<Req,Res>,
     callback: ServerCallback<Req,Res>
-  ): IServiceServer {
+  ): ServiceServer<Req,Res> {
     if (!service) {
       throw new Error(`Unable to advertise unnamed service - got ${service}`);
     }
@@ -210,7 +213,7 @@ export default class NodeHandle implements INodeHandle {
     service: string,
     type: ServiceConstructor<Req,Res>|string,
     options?: ClientOptions
-  ): IServiceClient<Req,Res> {
+  ): ServiceClient<Req,Res> {
     if (!service) {
       throw new Error(`Unable to create unnamed service client - got ${service}`);
     }

@@ -27,8 +27,8 @@ import { EventEmitter } from 'events'
 import Logging from '../LoggingManager'
 import type Logger from '../../utils/log/Logger';
 import ClientStates from '../../utils/ClientStates'
-import { SubscriberOptions, SubscriberClientMap, UdpInfo } from '../../types/Subscriber';
-import IRosNode from '../../types/RosNode';
+import { SubscriberOptions, SubscriberClientMap, UdpInfo } from '../../types/ISubscriber';
+import IRosNode from '../../types/IRosNode';
 import { MessageConstructor } from '../../types/Message';
 import * as XmlrpcTypes from '../../types/XmlrpcTypes';
 

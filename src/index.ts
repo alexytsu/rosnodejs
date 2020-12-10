@@ -21,11 +21,12 @@ import * as netUtils from './utils/network_utils';
 import * as msgUtils from './utils/message_utils';
 import * as OnTheFlyMessages from './utils/messageGeneration/OnTheFlyMessages';
 import * as util from 'util';
+import * as fs from 'fs';
 import RosLogStream from './utils/log/RosLogStream';
 import ConsoleLogStream from './utils/log/ConsoleLogStream';
-import RosNode from './lib/RosNode';
+import RosNode, { NodeOptions } from './lib/RosNode';
 import NodeHandle from './lib/NodeHandle';
-import LoggingManager from './lib/LoggingManager';
+import LoggingManager, { NodeLoggerOptions, RosLoggerOptions } from './lib/LoggingManager';
 import Time from './lib/Time';
 import * as packages from './utils/messageGeneration/packages';
 
@@ -35,11 +36,12 @@ import * as ClientStates from './actions/ClientStates';
 import SimpleActionClient from './actions/SimpleActionClient';
 import SimpleActionServer from './actions/SimpleActionServer';
 
-import MsgLoader from './utils/messageGeneration/MessageLoader';
+import MsgLoader from './utils/messageGeneration/MessageManager';
 import * as RemapUtils from './utils/remapping_utils';
 import names from './lib/Names';
 import ThisNode from './lib/ThisNode';
 import type { ActionClientInterfaceOptions } from './lib/ActionClientInterface';
+import { fstat } from 'fs';
 
 // will be initialized through call to initNode
 let log = LoggingManager.getLogger();
@@ -64,7 +66,7 @@ const Rosnodejs = {
    *                                    A value of '0' will try once before stopping. @default -1
    * @return {Promise} resolved when connection to master is established
    */
-  async initNode(nodeName: string, options: any): Promise<NodeHandle> {
+  async initNode(nodeName: string, options?: InitNodeOptions): Promise<NodeHandle> {
     if (typeof nodeName !== 'string') {
       throw new Error('The node name must be a string');
     }
@@ -155,22 +157,21 @@ const Rosnodejs = {
     }
   },
 
-  async loadPackage(packageName: string, outputDir: string=null, verbose=false): Promise<void> {
-    const msgLoader = new MsgLoader(verbose);
-    if (!outputDir) {
-      outputDir = msgUtils.getTopLevelMessageDirectory();
+  async generateMessages(options: GenerateMessageOptions): Promise<void> {
+    const msgLoader = new MsgLoader(options.verbose || false);
+    if (!options.outputDir) {
+      options.outputDir = msgUtils.getTopLevelMessageDirectory();
     }
-    await msgLoader.buildPackage(packageName, outputDir);
-    console.log('Finished building messages!');
-  },
+    if (options.package) {
+      await msgLoader.buildPackage(options.package, options.outputDir);
+    }
+    else {
+      await msgLoader.buildPackageTree(options.outputDir);
+    }
 
-  async loadAllPackages(outputDir: string=null, verbose=false): Promise<void> {
-    const msgLoader = new MsgLoader(verbose);
-    if (!outputDir) {
-      outputDir = msgUtils.getTopLevelMessageDirectory();
+    if (options.generateTypes) {
+      await msgLoader.generateTypes(options.outputDir);
     }
-    await msgLoader.buildPackageTree(outputDir)
-    console.log('Finished building messages!');
   },
 
   findPackage(packageName: string): Promise<string> {
@@ -266,6 +267,12 @@ const Rosnodejs = {
 };
 
 export default Rosnodejs;
+export type { default as Subscriber } from './lib/Subscriber';
+export type { default as Publisher } from './lib/Publisher';
+export type { default as ServiceClient } from './lib/ServiceClient';
+export type { default as ServiceServer } from './lib/ServiceServer';
+
+
 
 //------------------------------------------------------------------
 // Local Helper Functions
@@ -352,4 +359,21 @@ function _resolveNodeName(nodeName: string, remappings: RemapUtils.RemapT, optio
  */
 function _anonymizeNodeName(nodeName: string): string {
   return util.format('%s_%s_%s', nodeName, process.pid, Date.now());
+}
+
+interface InitNodeOptions {
+  anonymous?: boolean;
+  logging?: NodeLoggerOptions & RosLoggerOptions,
+  rosMasterUri?: string;
+  timeout?: number;
+  node?: NodeOptions; // FIXME
+  onTheFly?: boolean;
+  notime?: boolean;
+}
+
+interface GenerateMessageOptions {
+  verbose?: boolean;
+  outputDir?: string;
+  package?: string;
+  generateTypes?: boolean;
 }

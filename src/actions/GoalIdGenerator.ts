@@ -1,6 +1,6 @@
 import Time from '../lib/Time';
 import { RosTime } from '../types/RosTypes';
-import { INodeHandle } from '../types/NodeHandle';
+import { INodeHandle } from '../types/INodeHandle';
 
 let GOAL_COUNT = 0;
 

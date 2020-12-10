@@ -1,10 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
+import * as fse from 'fs-extra';
 import * as packages   from './packages';
 import * as fieldsUtil from './fields';
 import IndentedWriter from './IndentedWriter';
 import * as MsgSpec from './MessageSpec';
+import { dir } from 'console';
+import { packageMap } from '../../ros_msg_utils';
 
 enum LoadStatus {
   LOADING,
@@ -99,6 +101,18 @@ export default class MessageManager {
     });
   }
 
+  async generateTypes(outputDir: string) {
+    // we stored all the files in outputDir - for types we need to consolidate them all
+    const directory = path.resolve(__dirname, '../../../msgs');
+    console.log('generate types from %s', outputDir);
+
+    await fse.emptyDir(directory);
+    await generateIndex(outputDir, directory, this._packageCache);
+    await generatePackageJson(directory);
+
+    return generateTypesFile(directory, this._packageCache);
+  }
+
   async initTree(): Promise<void> {
     if (this._packageCache === null) {
       this.log('Traversing ROS_PACKAGE_PATH...');
@@ -136,7 +150,7 @@ export default class MessageManager {
       await this.initPackageWrite(packageName, outputDirectory);
       await this.writePackageMessages(packageName, outputDirectory);
       await this.writePackageServices(packageName, outputDirectory);
-      this._loadingPkgs.set(packageName, LoadStatus.LOADING);
+      this._loadingPkgs.set(packageName, LoadStatus.LOADED);
       console.log('Finished building package %s', packageName);
     }
   }
@@ -401,3 +415,164 @@ function writeFile(filepath: string, data: string): Promise<void> {
     });
   });
 }
+
+async function generateIndex(from: string, to: string, packageMap: PackageMap): Promise<void> {  
+  await fse.copy(from, to);
+
+  const dir = await fs.promises.opendir(from);
+  const w = new IndentedWriter();
+  for (const pkg in packageMap) {
+    w.write(`const ${pkg} = require('./${pkg}/_index.js')`);
+  }
+
+  w.newline()
+   .write('module.exports = {')
+   .indent();
+  for (const pkg in packageMap) {
+    w.write(`${pkg},`)
+  }
+  w.dedent().write('};');
+
+  await writeFile(path.join(to, 'index.js'), w.get());
+}
+
+async function generatePackageJson(directory: string) {
+  const json = {
+    name: 'rosnodejs_msgs',
+    version: '0.1.0',
+    main: 'index.js',
+    types: 'index.d.ts',
+  };
+
+  await writeFile(path.join(directory, 'package.json'), JSON.stringify(json, null, '  '));
+}
+
+async function generateTypesFile(directory: string, packageMap: PackageMap): Promise<void> {
+  await createDirectory(directory);
+  console.log('created directory %s', directory);
+
+  const w = new IndentedWriter();
+  w.write('type BuiltinTime = { secs: number; nsecs: number};')
+   .write('declare namespace rosnodejs_msgs {')
+   .indent()
+   
+  for (const pkg in packageMap) {
+    w.write(`namespace ${pkg} {`).indent();
+    const pkgInfo = packageMap[pkg];
+
+    if (Object.keys(pkgInfo.messages).length > 0) {
+      w.write(`namespace msg {`).indent();
+      for (const msg in pkgInfo.messages) {
+        const spec = pkgInfo.messages[msg].spec;
+        writeMessageType(w, pkg, spec);
+      }
+      w.dedent().write('}');
+    }
+
+    if (Object.keys(pkgInfo.services).length > 0) {
+      w.write(`namespace srv {`).indent();
+      for (const srv in pkgInfo.services) {
+        const spec = pkgInfo.services[srv].spec;
+
+        writeMessageType(w, pkg, spec.request, true);
+        writeMessageType(w, pkg, spec.response, true);
+
+        w.write(`interface ${spec.messageName} {`)
+          .indent()
+          .write(`Request: ${spec.request.messageName}`)
+          .write(`Response: ${spec.response.messageName}`)
+          .dedent()
+          .write('}')
+          .newline();
+      }
+      w.dedent().write('}');
+    }
+
+    w.dedent().write('}');
+  }
+
+  w.dedent().write('}');
+  w.write('export default interface msgs {')
+   .indent();
+
+  for (const pkg in packageMap) {
+    w.write(`${pkg}: {`).indent();
+    const pkgInfo = packageMap[pkg];
+    
+    if (Object.keys(pkgInfo.messages).length > 0) {
+      w.write(`msg: {`).indent();
+      for (const msg in pkgInfo.messages) {
+        w.write(`${msg}: rosnodejs_msgs.${pkg}.msg.${msg};`)
+      }
+      w.dedent().write('};');
+    }
+
+    if (Object.keys(pkgInfo).length > 0) {
+      w.write('srv: {').indent();
+      for (const srv in pkgInfo.services) {
+        w.write(`${srv}: rosnodejs_msgs.${pkg}.srv.${srv};`);
+      }
+      w.dedent().write('};');
+    }
+    w.dedent().write('}');
+  }
+  w.dedent().write('}');
+
+  const file = path.join(directory, 'index.d.ts')
+  await writeFile(file, w.get());
+  console.log('wrote file %s', file);
+}
+
+function writeMessageType(w: IndentedWriter, packageName: string, spec: MsgSpec.MsgSpec, isFromSrv: boolean = false): void {
+  w.write(`class ${spec.messageName} {`).indent();
+  for (const field of spec.fields) {
+    const maybeArr = field.isArray ? '[]' : '';
+    if (field.isBuiltin) {
+      w.write(`${field.name}: ${getTypeStringForBuiltin(field.baseType)}${maybeArr};`);
+    }
+    else {
+      const fieldPack = field.getPackage();
+      // if (isFromSrv || fieldPack !== packageName) {
+        w.write(`${field.name}: ${fieldPack}.msg.${field.getMessage()}${maybeArr};`);
+      // }
+      // else {
+      //   w.write(`${field.name}: ${field.getMessage()}${maybeArr};`);
+      // }
+    }
+  }
+  w.dedent().write('}');
+  w.newline();
+}
+
+
+function getTypeStringForBuiltin(fieldType: string): string {
+  const typeMap: {[key: string]: string} = {
+    'char': 'number',
+    'byte': 'number',
+    'bool': 'boolean',
+    'int8': 'number',
+    'uint8': 'number',
+    'int16': 'number',
+    'uint16': 'number',
+    'int32': 'number',
+    'uint32': 'number',
+    'int64': 'number',
+    'uint64': 'number',
+    'float32': 'number',
+    'float64': 'number',
+    'string': 'string',
+    'time': 'BuiltinTime',
+    'duration': 'BuiltinTime'
+  }
+  
+  const val = typeMap[fieldType];
+
+  if (val === undefined) {
+    throw new Error(`Unable to get type string for builtin [${fieldType}]`);
+  }
+  return val;
+}
+
+// FIXME: consider generating files into the same directory as rosnodejs. then users could import
+// code + definitions via
+// import rtr_msgs from 'rosnodejs/msgs/rtr_msgs';

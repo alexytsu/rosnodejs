@@ -22,7 +22,7 @@ import RosLogStream from '../utils/log/RosLogStream';
 import ConsoleLogStream from '../utils/log/ConsoleLogStream';
 import LogFormatter from '../utils/log/LogFormatter';
 import type { GetLoggers, SetLoggerLevel } from '../types/RosTypes';
-import type { INodeHandle } from '../types/NodeHandle';
+import type { INodeHandle } from '../types/INodeHandle';
 import * as msgUtils from '../utils/message_utils';
 
 //-----------------------------------------------------------------------
@@ -56,14 +56,14 @@ const KNOWN_LOGS = [
 
 //-----------------------------------------------------------------------
 
-type NodeLoggerOptions = {
+export type NodeLoggerOptions = {
   streams?: bunyan.Stream[];
   level?: bunyan.LogLevel;
   getLoggers?: ExternalLogInterface['getLoggers'];
   setLoggerLevel?: ExternalLogInterface['setLoggerLevel'];
 }
 
-type RosLoggerOptions = {
+export type RosLoggerOptions = {
   skipRosLogging?: boolean;
   waitOnRosOut?: boolean;
 }

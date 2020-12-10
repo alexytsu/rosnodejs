@@ -1,7 +1,7 @@
-import IRosNode from "../types/RosNode";
+import type RosNode from "./RosNode";
 
 interface ThisNodeT {
-  node: IRosNode|null;
+  node: RosNode|null;
   getNodeName(): string;
   ok(): boolean;
   shutdown(): Promise<void>;

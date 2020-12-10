@@ -21,8 +21,8 @@ import { DeserializeStream } from '../utils/serialization_utils'
 import * as TcprosUtils from '../utils/tcpros_utils'
 import { EventEmitter } from 'events'
 import Logging from './LoggingManager'
-import { ServiceClientOptions } from '../types/ServiceClient';
-import IRosNode from '../types/RosNode';
+import { IServiceClient, ServiceClientOptions } from '../types/IServiceClient';
+import IRosNode from '../types/IRosNode';
 import type Logger from '../utils/log/Logger';
 import { ServiceConstructor } from '../types/Message';
 
@@ -35,7 +35,7 @@ import { ServiceConstructor } from '../types/Message';
  * next call in the queue is handled
  */
 export default class ServiceClient<Req,Res>
-    extends EventEmitter
+    extends EventEmitter implements IServiceClient<Req, Res>
 {
   private _service: string;
   private _type: string;

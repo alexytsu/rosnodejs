@@ -24,9 +24,9 @@ import { EventEmitter } from 'events';
 import Logging from './LoggingManager';
 import ClientStates from '../utils/ClientStates'
 import type Logger from '../utils/log/Logger';
-import { IServiceServer, ServerCallback, ServerOptions, ServiceClientMap, ServiceConnectionHeader } from '../types/ServiceServer';
+import { IServiceServer, ServerCallback, ServerOptions, ServiceClientMap, ServiceConnectionHeader } from '../types/IServiceServer';
 import { Socket } from 'net';
-import IRosNode from '../types/RosNode';
+import IRosNode from '../types/IRosNode';
 import { ServiceConstructor } from '../types/Message';
 
 export default class ServiceServer<Req,Res>extends EventEmitter implements IServiceServer {

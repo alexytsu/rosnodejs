@@ -20,17 +20,18 @@ import { EventEmitter } from 'events'
 import Ultron = require('ultron');
 import { rebroadcast } from '../utils/event_utils'
 import type PublisherImpl from './impl/PublisherImpl';
+import type { IPublisher } from '../types/IPublisher';
 
 /**
  * @class Publisher
  * Public facing publishers class. Allows users to send messages to subscribers
  * on a given topic.
  */
-export default class Publisher<M> extends EventEmitter {
-  _impl: PublisherImpl<M>;
-  _topic: string;
-  _type: string;
-  _ultron: Ultron;
+export default class Publisher<M> extends EventEmitter implements IPublisher<M> {
+  private _impl: PublisherImpl<M>;
+  private _topic: string;
+  private _type: string;
+  private _ultron: Ultron;
 
   constructor(impl: PublisherImpl<M>) {
     super();

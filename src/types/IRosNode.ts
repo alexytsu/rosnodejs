@@ -1,11 +1,10 @@
 import type * as XmlrpcTypes from './XmlrpcTypes';
 import type Spinner from './Spinner';
-import { MessageConstructor, ServiceConstructor } from './Message';
-import { ISubscriber, SubscriberOptions, SubscriberCallback } from './Subscriber';
-import { ServerCallback, IServiceServer, ServerOptions } from './ServiceServer';
-import { IPublisher, PublisherOptions } from './Publisher';
+import { ISubscriber, SubscriberOptions, SubscriberCallback } from './ISubscriber';
+import { ServerCallback, IServiceServer, ServerOptions } from './IServiceServer';
+import { IPublisher, PublisherOptions } from './IPublisher';
 import type Logger from '../utils/log/Logger';
-import { ServiceClientOptions, IServiceClient } from './ServiceClient';
+import { ServiceClientOptions, IServiceClient } from './IServiceClient';
 
 export type SpinnerOptions = {
   type?: string;

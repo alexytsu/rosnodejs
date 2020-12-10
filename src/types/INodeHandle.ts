@@ -1,8 +1,8 @@
 import { MessageConstructor, ServiceConstructor } from "./Message";
-import { IPublisher } from "./Publisher";
-import { ISubscriber, Transport } from "./Subscriber";
-import { IServiceServer, ServerCallback } from "./ServiceServer";
-import { IServiceClient } from "./ServiceClient";
+import { IPublisher } from "./IPublisher";
+import { ISubscriber, Transport } from "./ISubscriber";
+import { IServiceServer, ServerCallback } from "./IServiceServer";
+import { IServiceClient } from "./IServiceClient";
 
 export type AdvertiseOptions = {
   latching?: boolean;

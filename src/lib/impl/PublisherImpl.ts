@@ -25,10 +25,10 @@ import { EventEmitter } from 'events';
 import Logging from '../LoggingManager';
 import ClientStates from '../../utils/ClientStates';
 import * as UdprosUtils from '../../utils/udpros_utils';
-import { PublisherOptions, TcpClientMap, UdpClientMap } from '../../types/Publisher';
-import IRosNode from '../../types/RosNode';
+import { PublisherOptions, TcpClientMap, UdpClientMap } from '../../types/IPublisher';
+import IRosNode from '../../types/IRosNode';
 import { MessageConstructor, Message } from '../../types/Message';
-import { SubscriberHeader } from '../../types/Subscriber';
+import { SubscriberHeader } from '../../types/ISubscriber';
 
 let msgCount = 0;
 /**

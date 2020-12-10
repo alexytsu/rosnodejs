@@ -26,7 +26,7 @@ import PublisherImpl from './impl/PublisherImpl';
 import SubscriberImpl from './impl/SubscriberImpl';
 import ServiceClient from './ServiceClient';
 import ServiceServer from './ServiceServer';
-import GlobalSpinner from '../utils/spinners/GlobalSpinner';
+import GlobalSpinner, { GlobalSpinnerOptions } from '../utils/spinners/GlobalSpinner';
 import * as NetworkUtils from '../utils/network_utils';
 import * as messageUtils from '../utils/message_utils';
 import * as tcprosUtils from '../utils/tcpros_utils';
@@ -35,16 +35,16 @@ import { EventEmitter } from 'events';
 import Logging from './LoggingManager';
 import * as UdprosUtils from '../utils/udpros_utils';
 import * as UDPSocket from 'dgram';
-import IRosNode, { SpinnerOptions } from '../types/RosNode';
+import IRosNode, { SpinnerOptions } from '../types/IRosNode';
 import type Logger from '../utils/log/Logger';
 import type * as XmlrpcTypes from '../types/XmlrpcTypes';
 import type Spinner from '../types/Spinner';
-import { PublisherOptions } from '../types/Publisher';
-import { SubscriberOptions, SubscriberCallback } from '../types/Subscriber';
-import { ServerOptions, ServerCallback, IServiceServer } from '../types/ServiceServer';
-import { ServiceClientOptions } from '../types/ServiceClient';
+import { PublisherOptions } from '../types/IPublisher';
+import { SubscriberOptions, SubscriberCallback } from '../types/ISubscriber';
+import { ServerOptions, ServerCallback } from '../types/IServiceServer';
+import { ServiceClientOptions } from '../types/IServiceClient';
 
-type NodeOptions = {
+export type NodeOptions = {
   tcprosPort?: number;
   xmlrpcPort?: number;
   udprosPort?: number;
@@ -148,7 +148,7 @@ export default class RosNode extends EventEmitter implements IRosNode {
     return sub;
   }
 
-  advertiseService<Req, Res>(options: ServerOptions<Req,Res>, callback: ServerCallback<Req,Res>): IServiceServer {
+  advertiseService<Req, Res>(options: ServerOptions<Req,Res>, callback: ServerCallback<Req,Res>): ServiceServer<Req,Res> {
     let service = options.service;
     let serv = this._services[service];
     if (serv) {
@@ -704,7 +704,7 @@ export default class RosNode extends EventEmitter implements IRosNode {
       else {
         switch (spinnerOpts.type) {
           case 'Global':
-            this._spinner = new GlobalSpinner(spinnerOpts);
+            this._spinner = new GlobalSpinner(spinnerOpts as GlobalSpinnerOptions);
             break;
         }
       }

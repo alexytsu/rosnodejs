@@ -1,6 +1,6 @@
 import * as fieldsUtil from './fields';
 import * as MessageSpec from './MessageSpec';
-import MessageLoader from './MessageLoader';
+import MessageLoader from './MessageManager';
 import { MessageRegistry, Message, MessageConstructor, ServiceConstructor } from '../../types/Message';
 
 // ---------------------------------------------------------

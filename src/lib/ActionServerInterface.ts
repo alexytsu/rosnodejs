@@ -17,9 +17,9 @@
 
 import Time from './Time';
 import { EventEmitter } from 'events';
-import { INodeHandle, SubscribeOptions, AdvertiseOptions } from '../types/NodeHandle';
-import { ISubscriber } from '../types/Subscriber';
-import { IPublisher } from '../types/Publisher';
+import { INodeHandle, SubscribeOptions, AdvertiseOptions } from '../types/INodeHandle';
+import { ISubscriber } from '../types/ISubscriber';
+import { IPublisher } from '../types/IPublisher';
 import GoalIdGenerator from '../actions/GoalIdGenerator';
 import { ActionConstructor, MessageConstructor, ActionMsgs } from '../types/Message';
 
