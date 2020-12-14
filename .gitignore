@@ -34,3 +34,6 @@ node_modules
 
 # ignore the build repo
 dist/
+
+# ignore ide files
+.vscode/
